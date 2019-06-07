@@ -137,6 +137,18 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}
 	s := pubsub1.NewGCPPubSubHandler(client, topic, subscription, endpoints, options)
 
+	// TODO implement later
+	// kafkahost := viper.GetString("KAFKA_HOST")
+	// if kafkahost == "" {
+	// 	logger.Log("KAFKA_HOST", "environment variable must be set.\n")
+	// }
+	// kafkaport := viper.GetString("KAFKA_PORT")
+	// if kafkahost == "" {
+	// 	logger.Log("KAFKA_PORT", "environment variable must be set.\n")
+	// }
+	// config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
+	// pubsub1.NewKafkaPubSubHandler(config)
+
 	g.Add(func() error {
 		logger.Log("transport", "Google PubSub")
 		return s.Serve()
@@ -146,22 +158,18 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 }
 
-func initKafkaPubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
-	options := defaultHttpOptions(logger, tracer)
-	// Add your http options here
-
-	httpHandler := http.NewHTTPHandler(endpoints, options)
-	httpListener, err := net.Listen("tcp", *httpAddr)
-	if err != nil {
-		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
-	}
-	g.Add(func() error {
-		logger.Log("transport", "HTTP", "addr", *httpAddr)
-		return http1.Serve(httpListener, httpHandler)
-	}, func(error) {
-		httpListener.Close()
-	})
-}
+// func initKafkaPubSubHandler() {
+// 	kafkahost := viper.GetString("KAFKA_HOST")
+// 	if kafkahost == "" {
+// 		logger.Log("KAFKA_HOST", "environment variable must be set.\n")
+// 	}
+// 	kafkaport := viper.GetString("KAFKA_PORT")
+// 	if kafkahost == "" {
+// 		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
+// 	}
+// 	config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
+// 	pubsub1.NewKafkaPubSubHandler(config)
+// }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}

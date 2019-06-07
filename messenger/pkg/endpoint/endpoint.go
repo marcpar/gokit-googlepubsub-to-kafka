@@ -23,11 +23,14 @@ type SubscriberResponse struct {
 
 // MakeSubscriberEndpoint returns an endpoint that invokes Subscriber on the service.
 func MakeSubscriberEndpoint(s service.MessengerService) endpoint.Endpoint {
+	// return publicsher.End
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		fmt.Println(string(request.([]byte))) // TODO:remove
+		// fmt.Println("request", request) // TODO:remove
 		req := request.(SubscriberRequest)
-		err := s.Subscriber(ctx, req.Msg, req.Attributes)
-		return SubscriberResponse{Err: err}, nil
+		msg, attr, err := s.Subscriber(ctx, req.Msg, req.Attributes)
+		fmt.Println(msg, attr, err)
+		//TODO: endpoint return
+		return SubscriberResponse{Msg: req.Msg, Err: err}, nil
 	}
 }
 

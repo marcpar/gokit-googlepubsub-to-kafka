@@ -17,7 +17,8 @@ import (
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
-	initHttpHandler(endpoints, g)
+	// initHttpHandler(endpoints, g)
+	// initKafkaPubSubHandler()
 	initGooglePubSubHandler(endpoints, g)
 	return g
 }

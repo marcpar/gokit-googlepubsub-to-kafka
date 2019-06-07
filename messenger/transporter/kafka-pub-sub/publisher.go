@@ -4,45 +4,44 @@ import (
 	"context"
 	"time"
 
-	"cloud.google.com/go/pubsub"
 	endpoint "github.com/go-kit/kit/endpoint"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 // Publisher publishes messages to Google cloud pubsub
 type Publisher struct {
-	client *pubsub.Client
+	config *Config
 	enc    EncodeMessageFunc
-	topic  *pubsub.Topic
+}
+
+type Config struct {
+	Addr string
 }
 
 // NewPublisher creates a publisher that will publish to the given topic
-func NewPublisher(client *pubsub.Client, enc EncodeMessageFunc, topic string) *Publisher {
+func NewPublisher(config *Config, enc EncodeMessageFunc) *Publisher {
 	return &Publisher{
-		client: client,
+		config: config,
 		enc:    enc,
-		topic:  client.Topic(topic),
 	}
 }
 
 // Endpoint returns a useable endpoint for publishing messages on the publisher transport
-func (p *Publisher) Endpoint() endpoint.Endpoint {
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost"})
-
+func (p *Publisher) Endpoint(topic string, partition int) endpoint.Endpoint {
 	return func(ctx context.Context, msg interface{}) (response interface{}, err error) {
-		payload, err := p.enc(ctx, msg)
+		conn, err := kafka.DialLeader(context.Background(), "tcp", p.config.Addr, topic, partition)
 		if err != nil {
 			return nil, err
 		}
-
-		_, err = p.topic.Publish(ctx, &pubsub.Message{Data: payload, PublishTime: time.Now()}).Get(ctx)
-
+		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		conn.WriteMessages(kafka.Message{Value: []byte(msg.(string))})
+		conn.Close()
 		return nil, err
 	}
 }
 
 // Stop the publication
-func (p *Publisher) Stop() error {
-	p.topic.Stop()
-	return nil
-}
+// func (p *Publisher) Stop() error {
+// 	p.topic.Stop()
+// 	return nil
+// }

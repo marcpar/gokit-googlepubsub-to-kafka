@@ -98,10 +98,13 @@ func (s *Subscriber) Serve() error {
 func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 
 	defer func() {
+
 		if r := recover(); r != nil {
+			fmt.Println(r)
 			s.logger.Log("error", r)
 			msg.Nack()
 		} else {
+			fmt.Println(r)
 			msg.Ack()
 		}
 	}()
@@ -112,7 +115,7 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 		s.logger.Log("error", err)
 		return
 	}
-	fmt.Println("payload", payload)
+
 	response, err := s.endpoint(ctx, payload)
 	fmt.Println("endpoints", response)
 	if err != nil {
@@ -137,7 +140,6 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 			return
 		}
 	}
-
 }
 
 // Stop can gracefully stops the subscriber
