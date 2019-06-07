@@ -2,6 +2,7 @@ package googlepubsub
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/pubsub"
 	endpoint "github.com/go-kit/kit/endpoint"
@@ -71,9 +72,9 @@ func NewSubscriber(client *pubsub.Client, topicName string, subscription string,
 
 // Serve begins listening for messages and passing them to the endpoint:
 func (s *Subscriber) Serve() error {
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	exists, err := s.subscription.Exists(ctx)
 	if err != nil {
 		return err
@@ -95,6 +96,7 @@ func (s *Subscriber) Serve() error {
 }
 
 func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
+
 	defer func() {
 		if r := recover(); r != nil {
 			s.logger.Log("error", r)
@@ -104,14 +106,15 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 		}
 	}()
 
-	payload, err := s.dec(ctx, msg.Data)
+	payload, err := s.dec(ctx, msg)
+
 	if err != nil {
 		s.logger.Log("error", err)
 		return
 	}
-
+	fmt.Println("payload", payload)
 	response, err := s.endpoint(ctx, payload)
-
+	fmt.Println("endpoints", response)
 	if err != nil {
 		if s.errorEndpoint == nil {
 			s.logger.Log("error", err)

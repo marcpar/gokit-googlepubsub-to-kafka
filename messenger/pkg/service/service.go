@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-
-	"cloud.google.com/go/pubsub"
 )
 
 // MessengerService describes the service.
@@ -11,7 +9,7 @@ type MessengerService interface {
 	// Add your methods here
 	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
 
-	Subscriber(ctx context.Context, msg *pubsub.Message) (err error)
+	Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error)
 }
 
 type basicMessengerService struct {
@@ -32,7 +30,7 @@ func New(middleware []Middleware) MessengerService {
 	return svc
 }
 
-func (b *basicMessengerService) Subscriber(ctx context.Context, msg *pubsub.Message) (err error) {
+func (b *basicMessengerService) Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error) {
 	// TODO implement the business logic of Subscriber
 	return err
 }

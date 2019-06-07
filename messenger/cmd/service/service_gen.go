@@ -18,7 +18,7 @@ import (
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
 	initHttpHandler(endpoints, g)
-	initGooglePubSubHandler(endpoints.SubscriberEndpoint, g)
+	initGooglePubSubHandler(endpoints, g)
 	return g
 }
 func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
@@ -27,9 +27,12 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 	return options
 }
 
-func defaultGooglePubSubOptions(logger log.Logger, tracer opentracinggo.Tracer, endpoint endpoint1.Endpoint) map[string][]googlepubsub.SubscriberOption {
+func defaultGooglePubSubOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]googlepubsub.SubscriberOption {
 	options := map[string][]googlepubsub.SubscriberOption{
-		"Subscriber": {googlepubsub.WithErrorEndpoint(endpoint)}}
+		"Subscriber": {
+			//googlepubsub.SubscriberErrorLogger(logger) TODO: logger
+		},
+	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {

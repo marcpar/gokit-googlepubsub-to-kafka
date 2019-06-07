@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"cloud.google.com/go/pubsub"
 	log "github.com/go-kit/kit/log"
 )
 
@@ -21,9 +20,9 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
-func (l loggingMiddleware) Subscriber(ctx context.Context, msg *pubsub.Message) (err error) {
+func (l loggingMiddleware) Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error) {
 	defer func() {
 		l.logger.Log("method", "Subscriber", "Message", msg, "err", err)
 	}()
-	return l.next.Subscriber(ctx, msg)
+	return l.next.Subscriber(ctx, msg, attribute)
 }

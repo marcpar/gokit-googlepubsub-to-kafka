@@ -8,7 +8,6 @@ import (
 	http1 "net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"cloud.google.com/go/pubsub"
@@ -116,36 +115,34 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 }
 
-func initGooglePubSubHandler(endpoint endpoint1.Endpoint, g *group.Group) {
-	options := defaultGooglePubSubOptions(logger, tracer, endpoint)
+func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
+	options := defaultGooglePubSubOptions(logger, tracer)
 
 	project := viper.GetString("GOOGLE_CLOUD_PROJECT")
 	if project == "" {
 		logger.Log("GOOGLE_CLOUD_PROJECT", "environment variable must be set.\n")
-		os.Exit(1)
 	}
 	client, err := pubsub.NewClient(context.Background(), project)
 	if err != nil {
 		logger.Log("Google Pub/Sub client", err)
-		os.Exit(1)
 	}
-	subName := viper.GetString("GOOGLE-TOPIC")
-	if err != nil {
-		logger.Log("Google Pub/Sub client", err)
-		os.Exit(1)
+	topic := viper.GetString("GOOGLE_TOPIC")
+	if topic == "" {
+		logger.Log("GOOGLE_TOPIC environment variable must not be empty", err)
 	}
+	subscription := viper.GetString("GOOGLE_SUBSCRIPTION")
 
-	pubsub1.NewGCPPubSubHandler()
-	// googleNewSubscriber(client)
+	if subscription == "" {
+		logger.Log("GOOGLE_SUBSCRIPTION environment variable must not be empty", err)
+	}
+	s := pubsub1.NewGCPPubSubHandler(client, topic, subscription, endpoints, options)
 
-	// t := createTopicIfNotExists(client)
-	// g.Add(func() error {
-	// 	logger.Log("transport", "Google PubSub", "topic", viper.GetString("TOPIC"))
-
-	// 	return pullMsgs(client, sub, t)
-	// }, func(error) {
-	// 	//httpListener.Close()
-	// })
+	g.Add(func() error {
+		logger.Log("transport", "Google PubSub")
+		return s.Serve()
+	}, func(error) {
+		s.Stop()
+	})
 
 }
 
@@ -164,7 +161,6 @@ func initKafkaPubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}, func(error) {
 		httpListener.Close()
 	})
-
 }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
@@ -206,70 +202,4 @@ func initCancelInterrupt(g *group.Group) {
 	}, func(error) {
 		close(cancelInterrupt)
 	})
-}
-
-func pullMsgs(client *pubsub.Client, subName string, topic *pubsub.Topic) error {
-	ctx := context.Background()
-
-	// Publish 10 messages on the topic.
-	var results []*pubsub.PublishResult
-	for i := 0; i < 10; i++ {
-		res := topic.Publish(ctx, &pubsub.Message{
-			Data: []byte(fmt.Sprintf("hello world #%d", i)),
-		})
-		results = append(results, res)
-	}
-
-	// Check that all messages were published.
-	for _, r := range results {
-		_, err := r.Get(ctx)
-		if err != nil {
-			return err
-		}
-	}
-
-	// [START pubsub_subscriber_async_pull]
-	// [START pubsub_quickstart_subscriber]
-	// Consume 10 messages.
-	var mu sync.Mutex
-	received := 0
-	sub := client.Subscription(subName)
-	cctx, cancel := context.WithCancel(ctx)
-	err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
-		msg.Ack()
-		fmt.Printf("Got message: %q\n", string(msg.Data))
-		mu.Lock()
-		defer mu.Unlock()
-		received++
-		if received == 10 {
-			cancel()
-		}
-	})
-	if err != nil {
-		return err
-	}
-	// [END pubsub_subscriber_async_pull]
-	// [END pubsub_quickstart_subscriber]
-	return nil
-}
-
-func createTopicIfNotExists(c *pubsub.Client) *pubsub.Topic {
-	ctx := context.Background()
-
-	topic := viper.GetString("GOOGLE_TOPIC")
-	// Create a topic to subscribe to.
-	t := c.Topic(topic)
-	ok, err := t.Exists(ctx)
-	if err != nil {
-		panic(err)
-	}
-	if ok {
-		return t
-	}
-
-	t, err = c.CreateTopic(ctx, topic)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }
