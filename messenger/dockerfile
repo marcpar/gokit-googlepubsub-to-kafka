@@ -12,12 +12,12 @@ RUN apk update && apk add --no-cache git \
     librdkafka --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
     musl-dev \
     librdkafka-dev 
-
 RUN mkdir /srv/messenger
 
 WORKDIR /srv/messenger
 
 # <- COPY go.mod and go.sum files to the workspace
+
 COPY go.mod . 
 
 COPY go.sum .
