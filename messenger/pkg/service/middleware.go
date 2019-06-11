@@ -20,9 +20,9 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
-func (l loggingMiddleware) Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error) {
+func (l loggingMiddleware) Subscriber(ctx context.Context, msg1 interface{}, attribute1 map[string]string) (msg interface{}, attribute map[string]string, err error) {
 	defer func() {
-		l.logger.Log("method", "Subscriber", "Message", msg, "err", err)
+		l.logger.Log("method", "Subscriber", "msg1", msg1, "", attribute1, "err", err)
 	}()
-	return l.next.Subscriber(ctx, msg, attribute)
+	return l.next.Subscriber(ctx, msg1, attribute1)
 }

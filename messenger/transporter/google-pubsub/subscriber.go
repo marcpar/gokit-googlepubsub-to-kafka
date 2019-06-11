@@ -2,7 +2,6 @@ package googlepubsub
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/pubsub"
 	endpoint "github.com/go-kit/kit/endpoint"
@@ -98,6 +97,7 @@ func (s *Subscriber) Serve() error {
 func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 
 	defer func() {
+
 		if r := recover(); r != nil {
 			s.logger.Log("error", r)
 			msg.Nack()
@@ -112,9 +112,9 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 		s.logger.Log("error", err)
 		return
 	}
-	fmt.Println("payload", payload)
+
 	response, err := s.endpoint(ctx, payload)
-	fmt.Println("endpoints", response)
+	// fmt.Println("endpoints", response)
 	if err != nil {
 		if s.errorEndpoint == nil {
 			s.logger.Log("error", err)
@@ -137,7 +137,6 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 			return
 		}
 	}
-
 }
 
 // Stop can gracefully stops the subscriber

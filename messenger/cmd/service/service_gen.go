@@ -17,7 +17,8 @@ import (
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
-	initHttpHandler(endpoints, g)
+	// initHttpHandler(endpoints, g)
+	// initKafkaPubSubHandler()
 	initGooglePubSubHandler(endpoints, g)
 	return g
 }
@@ -29,9 +30,7 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 
 func defaultGooglePubSubOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]googlepubsub.SubscriberOption {
 	options := map[string][]googlepubsub.SubscriberOption{
-		"Subscriber": {
-			//googlepubsub.SubscriberErrorLogger(logger) TODO: logger
-		},
+		"Subscriber": {googlepubsub.WithResponseEndpoint(initKafkaPubSubHandler().Endpoint())},
 	}
 	return options
 }

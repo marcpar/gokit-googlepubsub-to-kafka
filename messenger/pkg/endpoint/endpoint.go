@@ -17,17 +17,21 @@ type SubscriberRequest struct {
 
 // SubscriberResponse collects the response parameters for the Subscriber method.
 type SubscriberResponse struct {
-	Msg interface{}
-	Err error
+	Msg        interface{}
+	Attributes map[string]string
+	Err        error
 }
 
 // MakeSubscriberEndpoint returns an endpoint that invokes Subscriber on the service.
 func MakeSubscriberEndpoint(s service.MessengerService) endpoint.Endpoint {
+	// return publicsher.End
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		fmt.Println(string(request.([]byte))) // TODO:remove
 		req := request.(SubscriberRequest)
-		err := s.Subscriber(ctx, req.Msg, req.Attributes)
-		return SubscriberResponse{Err: err}, nil
+		// ctx = context.WithValue(ctx, "attributes", req.Attributes)
+		msg, attr, err := s.Subscriber(ctx, req.Msg, req.Attributes)
+		fmt.Println(msg, attr, err)
+		//TODO: endpoint return
+		return SubscriberResponse{Msg: req.Msg, Attributes: req.Attributes, Err: err}, nil
 	}
 }
 

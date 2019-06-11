@@ -9,15 +9,13 @@ type MessengerService interface {
 	// Add your methods here
 	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
 
-	Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error)
+	Subscriber(ctx context.Context, msg1 interface{}, attribute1 map[string]string) (msg interface{}, attribute map[string]string, err error)
 }
 
-type basicMessengerService struct {
-}
+type basicMessengerService struct{}
 
 // NewBasicMessengerService returns a naive, stateless implementation of MessengerService.
 func NewBasicMessengerService() MessengerService {
-
 	return &basicMessengerService{}
 }
 
@@ -30,7 +28,8 @@ func New(middleware []Middleware) MessengerService {
 	return svc
 }
 
-func (b *basicMessengerService) Subscriber(ctx context.Context, msg interface{}, attribute map[string]string) (err error) {
+func (b *basicMessengerService) Subscriber(ctx context.Context, msg1 interface{}, attribute1 map[string]string) (msg interface{}, attribute map[string]string, err error) {
 	// TODO implement the business logic of Subscriber
-	return err
+	// fmt.Println("hello")
+	return msg1, attribute1, nil
 }
