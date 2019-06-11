@@ -1,0 +1,8 @@
+FROM golang:1.12.5-alpine3.9 
+# Install git.
+# Git is required for fetching the dependencies.
+RUN apk update && apk add --no-cache git \
+    gcc \
+    curl \
+    pkgconfig \
+    librdkafka-dev 
