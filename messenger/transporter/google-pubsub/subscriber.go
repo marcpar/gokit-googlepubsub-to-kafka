@@ -2,7 +2,6 @@ package googlepubsub
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/pubsub"
 	endpoint "github.com/go-kit/kit/endpoint"
@@ -100,11 +99,9 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 	defer func() {
 
 		if r := recover(); r != nil {
-			fmt.Println(r)
 			s.logger.Log("error", r)
 			msg.Nack()
 		} else {
-			fmt.Println(r)
 			msg.Ack()
 		}
 	}()
@@ -117,7 +114,7 @@ func (s *Subscriber) rcv(ctx context.Context, msg *pubsub.Message) {
 	}
 
 	response, err := s.endpoint(ctx, payload)
-	fmt.Println("endpoints", response)
+	// fmt.Println("endpoints", response)
 	if err != nil {
 		if s.errorEndpoint == nil {
 			s.logger.Log("error", err)

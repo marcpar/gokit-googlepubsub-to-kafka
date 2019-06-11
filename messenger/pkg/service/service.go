@@ -12,12 +12,10 @@ type MessengerService interface {
 	Subscriber(ctx context.Context, msg1 interface{}, attribute1 map[string]string) (msg interface{}, attribute map[string]string, err error)
 }
 
-type basicMessengerService struct {
-}
+type basicMessengerService struct{}
 
 // NewBasicMessengerService returns a naive, stateless implementation of MessengerService.
 func NewBasicMessengerService() MessengerService {
-
 	return &basicMessengerService{}
 }
 

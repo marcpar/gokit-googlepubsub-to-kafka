@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 )
 
 // EncodeMessageFunc encodes a message being published
@@ -15,7 +14,6 @@ type DecodeMessageFunc func(context.Context, interface{}) (interface{}, error)
 
 // EncodeJSONMessage is an EncodeMessageFunc that serializes the message as a JSON object
 func EncodeJSONMessage(_ context.Context, msg interface{}) ([]byte, error) {
-	fmt.Println("encode decode")
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(msg); err != nil {
 		return nil, err

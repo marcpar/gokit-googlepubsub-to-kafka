@@ -10,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	kafkapubsub "github.com/marcpar/gcp-pubsub-kafka/messenger/transporter/kafka-pub-sub"
+
 	"cloud.google.com/go/pubsub"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -121,33 +123,25 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	project := viper.GetString("GOOGLE_CLOUD_PROJECT")
 	if project == "" {
 		logger.Log("GOOGLE_CLOUD_PROJECT", "environment variable must be set.\n")
+		os.Exit(1)
 	}
 	client, err := pubsub.NewClient(context.Background(), project)
 	if err != nil {
 		logger.Log("Google Pub/Sub client", err)
+		os.Exit(1)
 	}
 	topic := viper.GetString("GOOGLE_TOPIC")
 	if topic == "" {
 		logger.Log("GOOGLE_TOPIC environment variable must not be empty", err)
+		os.Exit(1)
 	}
 	subscription := viper.GetString("GOOGLE_SUBSCRIPTION")
 
 	if subscription == "" {
 		logger.Log("GOOGLE_SUBSCRIPTION environment variable must not be empty", err)
+		os.Exit(1)
 	}
 	s := pubsub1.NewGCPPubSubHandler(client, topic, subscription, endpoints, options)
-
-	// TODO implement later
-	// kafkahost := viper.GetString("KAFKA_HOST")
-	// if kafkahost == "" {
-	// 	logger.Log("KAFKA_HOST", "environment variable must be set.\n")
-	// }
-	// kafkaport := viper.GetString("KAFKA_PORT")
-	// if kafkahost == "" {
-	// 	logger.Log("KAFKA_PORT", "environment variable must be set.\n")
-	// }
-	// config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
-	// pubsub1.NewKafkaPubSubHandler(config)
 
 	g.Add(func() error {
 		logger.Log("transport", "Google PubSub")
@@ -158,18 +152,18 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 }
 
-// func initKafkaPubSubHandler() {
-// 	kafkahost := viper.GetString("KAFKA_HOST")
-// 	if kafkahost == "" {
-// 		logger.Log("KAFKA_HOST", "environment variable must be set.\n")
-// 	}
-// 	kafkaport := viper.GetString("KAFKA_PORT")
-// 	if kafkahost == "" {
-// 		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
-// 	}
-// 	config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
-// 	pubsub1.NewKafkaPubSubHandler(config)
-// }
+func initKafkaPubSubHandler() *kafkapubsub.Publisher {
+	kafkahost := viper.GetString("KAFKA_HOST")
+	if kafkahost == "" {
+		logger.Log("KAFKA_HOST", "environment variable must be set.\n")
+	}
+	kafkaport := viper.GetString("KAFKA_PORT")
+	if kafkahost == "" {
+		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
+	}
+	config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
+	return pubsub1.NewKafkaPubSubHandler(config)
+}
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}

@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/pubsub"
 	endpoint "github.com/marcpar/gcp-pubsub-kafka/messenger/pkg/endpoint"
@@ -23,6 +24,7 @@ func makePublisherHandler(config *kafkapubsub.Config) *kafkapubsub.Publisher {
 }
 
 func encodeSubscriberPub(_ context.Context, response interface{}) ([]byte, error) {
+	fmt.Println("encodeSubscriberPub", response)
 	topic := response.(string)
 	return []byte(topic), nil
 }

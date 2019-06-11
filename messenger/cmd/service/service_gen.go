@@ -30,9 +30,7 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 
 func defaultGooglePubSubOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]googlepubsub.SubscriberOption {
 	options := map[string][]googlepubsub.SubscriberOption{
-		"Subscriber": {
-			//googlepubsub.SubscriberErrorLogger(logger) TODO: logger
-		},
+		"Subscriber": {googlepubsub.WithResponseEndpoint(initKafkaPubSubHandler().Endpoint())},
 	}
 	return options
 }
