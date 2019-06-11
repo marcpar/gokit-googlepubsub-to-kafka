@@ -19,7 +19,7 @@ func decodeSubscriberSub(_ context.Context, msg interface{}) (interface{}, error
 	return endpoint.SubscriberRequest{Msg: m.Data, Attributes: m.Attributes}, nil
 }
 
-func makePublisherHandler(config *kafkapubsub.Config) *kafkapubsub.Publisher {
+func makePublisherHandler(config *kafka.ConfigMap) *kafkapubsub.Publisher {
 	return kafkapubsub.NewPublisher(config, encodeSubscriberPub)
 }
 

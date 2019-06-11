@@ -7,16 +7,18 @@ FROM golang:1.12.5-alpine3.9 as build-env
 RUN apk update && apk add --no-cache git \
     gcc \
     curl \
-    pkgconfig \
+    pkgconf \
+    libc-dev \
+    librdkafka --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    musl-dev \
     librdkafka-dev 
-
-RUN curl https://glide.sh/get | sh
 RUN mkdir /srv/messenger
 
 WORKDIR /srv/messenger
 
 # <- COPY go.mod and go.sum files to the workspace
-COPY go.mod .
+
+COPY go.mod . 
 
 COPY go.sum .
 

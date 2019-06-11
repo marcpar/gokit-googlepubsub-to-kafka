@@ -5,6 +5,7 @@ import (
 	endpoint "github.com/marcpar/gcp-pubsub-kafka/messenger/pkg/endpoint"
 	googlepubsub "github.com/marcpar/gcp-pubsub-kafka/messenger/transporter/google-pubsub"
 	kafkapubsub "github.com/marcpar/gcp-pubsub-kafka/messenger/transporter/kafka-pub-sub"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 // NewHTTPHandler returns a handler that makes a set of endpoints available on
@@ -15,6 +16,6 @@ func NewGCPPubSubHandler(client *pubsub.Client, topic string, subscription strin
 }
 
 // NewKafkaPubSubHandler lorem ipsum
-func NewKafkaPubSubHandler(config *kafkapubsub.Config) *kafkapubsub.Publisher {
+func NewKafkaPubSubHandler(config *kafka.ConfigMap) *kafkapubsub.Publisher {
 	return makePublisherHandler(config)
 }
