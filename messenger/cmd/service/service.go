@@ -150,25 +150,30 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}, func(error) {
 		s.Stop()
 	})
-
 }
 
 func initKafkaPubSubHandler() *kafkapubsub.Publisher {
-	kafkahost := viper.GetString("KAFKA_HOST")
-	if kafkahost == "" {
+	kafkaTopic := viper.GetString("KAFKA_TOPIC")
+	if kafkaTopic == "" {
+		logger.Log("KAFKA_TOPIC", "environment variable must be set.\n")
+		os.Exit(1)
+	}
+	kafkaHost := viper.GetString("KAFKA_HOST")
+	if kafkaHost == "" {
 		logger.Log("KAFKA_HOST", "environment variable must be set.\n")
+		os.Exit(1)
 	}
-	kafkaport := viper.GetInt("KAFKA_PORT")
-	if kafkahost == "" {
+	kafkaPort := viper.GetInt("KAFKA_PORT")
+	if kafkaPort == 0 {
 		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
+		os.Exit(1)
 	}
-	fmt.Println(fmt.Sprintf("%s:%d", kafkaHost, kafkaport))
 	config := &kafka.ConfigMap{
-		"bootstrap.servers":      "staging-kafka.kafka:9092",//fmt.Sprintf("%s:%d", kafkaHost, kafkaport),
+		"bootstrap.servers":      fmt.Sprintf("%s:%d", kafkaHost, kafkaPort),
 		"go.batch.producer":      true,
 		"queue.buffering.max.ms": 10,
 	}
-	return pubsub1.NewKafkaPubSubHandler(config)
+	return pubsub1.NewKafkaPubSubHandler(config, kafkaTopic)
 }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {

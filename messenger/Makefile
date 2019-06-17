@@ -9,3 +9,19 @@ build:
 .PHONY: push
 push:
 	docker push asia.gcr.io/solaire-resort-ops/real-time-event-processing/pubsub-router:latest
+
+.PHONY: consumer
+consumer:	
+	kubectl exec -it -n kafka testclient -- bin/kafka-console-consumer.sh --bootstrap-server staging-kafka:9092 --topic econnect-data-stream
+
+.PHONY: producer
+producer:	
+	kubectl exec -it -n kafka testclient -- bin/kafka-console-producer.sh --broker-list staging-kafka:9092 --topic econnect-data-stream
+
+.PHONY: publish
+publish:
+	gcloud pubsub topics publish staging-kafka --message "sir rommel3 fdssssa" --attribute topicName=econnect-data-stream
+
+.PHONY: kubetail
+kubetail:
+	kubetail pubsub-router
