@@ -1,0 +1,4 @@
+.vscode
+telepresence.log
+go.mod
+go.sum

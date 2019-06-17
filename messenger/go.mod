@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.40.0
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/apache/thrift v0.12.0 // indirect
+	github.com/confluentinc/confluent-kafka-go v1.0.0 // indirect
 	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 // indirect

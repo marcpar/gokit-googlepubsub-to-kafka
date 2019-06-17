@@ -10,6 +10,8 @@ import (
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
+//var logger log.Logger
+
 // Publisher publishes messages to Google cloud pubsub
 type Publisher struct {
 	//config *Config
@@ -32,33 +34,52 @@ func NewPublisher(config *kafka.ConfigMap, enc EncodeMessageFunc) *Publisher {
 
 func (p *Publisher) Endpoint() endpoint.Endpoint {
 	return func(ctx context.Context, msg interface{}) (response interface{}, err error) {
+
 		producer, err := kafka.NewProducer(p.config)
 		if err != nil {
 			panic(err)
 		}
-		defer producer.Close()
-		go func() {
-			for e := range producer.Events() {
-				switch ev := e.(type) {
-				case *kafka.Message:
-					if ev.TopicPartition.Error != nil {
-						fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
-					} else {
-						fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
-					}
-				}
-			}
-		}()
+
+		deliveryChan := make(chan kafka.Event)
+
+		// defer producer.Close()
+		// go func() {
+		// 	for e := range producer.Events() {
+		// 		switch ev := e.(type) {
+		// 		case *kafka.Message:
+		// 			if ev.TopicPartition.Error != nil {
+		// 				fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+		// 			} else {
+		// 				fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+		// 			}
+		// 		}
+		// 	}
+		// }()
+
 		message := msg.(endpoint1.SubscriberResponse)
 		attributes := message.Attributes["topicName"]
 		value := message.Msg.([]uint8)
-		producer.Produce(&kafka.Message{
+		// export GOOGLE_TOPIC=staging-kafka; export KAFKA_PORT=9092; export KAFKA_HOST=localhost; export GOOGLE_SUBSCRIPTION=kafka-sub; export GOOGLE_CLOUD_PROJECT=solaire-resort-staging-241506; export GOOGLE_APPLICATION_CREDENTIALS=./messenger/solaire-resort-staging-241506-80d45ed2aed4.json
+		fmt.Println("Publisher Attributes", attributes)
+		fmt.Println("Publisher Message", string([]byte(value)))
+		err = producer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &attributes, Partition: kafka.PartitionAny},
 			Value:          []byte(value),
-		}, nil)
+		}, deliveryChan)
+		if err != nil {
+			panic(err)
+		}
+		e := <-deliveryChan
+		m := e.(*kafka.Message)
+		// producer.Flush(15 * 1000)
 
-		producer.Flush(15 * 1000)
-		return nil, err
+		if m.TopicPartition.Error != nil {
+			fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
+		} else {
+			fmt.Printf("Delivered message to topic %s [%d] at offset %v\n", *m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+		}
+		close(deliveryChan)
+		return "test", nil
 	}
 
 }
