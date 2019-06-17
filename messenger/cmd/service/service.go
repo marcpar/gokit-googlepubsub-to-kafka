@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	kafkapubsub "github.com/marcpar/gcp-pubsub-kafka/messenger/transporter/kafka-pub-sub"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 
 	"cloud.google.com/go/pubsub"
 	endpoint1 "github.com/go-kit/kit/endpoint"
@@ -149,27 +150,37 @@ func initGooglePubSubHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}, func(error) {
 		s.Stop()
 	})
-
 }
 
 func initKafkaPubSubHandler() *kafkapubsub.Publisher {
-	kafkahost := viper.GetString("KAFKA_HOST")
-	if kafkahost == "" {
+	kafkaTopic := viper.GetString("KAFKA_TOPIC")
+	if kafkaTopic == "" {
+		logger.Log("KAFKA_TOPIC", "environment variable must be set.\n")
+		os.Exit(1)
+	}
+	kafkaHost := viper.GetString("KAFKA_HOST")
+	if kafkaHost == "" {
 		logger.Log("KAFKA_HOST", "environment variable must be set.\n")
+		os.Exit(1)
 	}
-	kafkaport := viper.GetString("KAFKA_PORT")
-	if kafkahost == "" {
+	kafkaPort := viper.GetInt("KAFKA_PORT")
+	if kafkaPort == 0 {
 		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
+		os.Exit(1)
 	}
-	config := &kafkapubsub.Config{fmt.Sprintf("%s:%s", kafkahost, kafkaport)}
-	return pubsub1.NewKafkaPubSubHandler(config)
+	config := &kafka.ConfigMap{
+		"bootstrap.servers":      fmt.Sprintf("%s:%d", kafkaHost, kafkaPort),
+		"go.batch.producer":      true,
+		"queue.buffering.max.ms": 10,
+	}
+	return pubsub1.NewKafkaPubSubHandler(config, kafkaTopic)
 }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	// Append your middleware here
 
-	return
+	return mw
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}

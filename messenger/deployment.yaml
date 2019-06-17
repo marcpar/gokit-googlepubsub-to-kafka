@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pubsub-router
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pubsub-router
+    spec:
+      containers:
+        - name: pubsub-router
+          image: marcpar/pubsub-router
+          env:
+            - name: GOOGLE_TOPIC
+              value: "staging-kafka"
+            - name: GOOGLE_SUBSCRIPTION
+              value: "kafka-sub"
+            - name: GOOGLE_CLOUD_PROJECT
+              value: "solaire-resort-staging-241506"
+            - name: KAFKA_HOST
+              value: "staging-kafka.kafka"
+            - name: KAFKA_PORT
+              value: "9092"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/service-credentials.json"
+          volumeMounts:
+              - name: google-cloud-key
+                mountPath: /var/secrets/google
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: pubsub-key

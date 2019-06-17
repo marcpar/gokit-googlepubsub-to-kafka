@@ -1,7 +1,7 @@
 version: "3.7"
 services:
-  golang:
-    image: marctest
+  pubsub-router:
+    image: asia.gcr.io/solaire-resort-ops/real-time-event-processing/pubsub-router
     working_dir: /srv/messenger
     volumes: 
       - ./messenger:/srv/messenger
