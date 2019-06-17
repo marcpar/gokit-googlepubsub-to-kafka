@@ -1,3 +1,11 @@
 .PHONY: run
 run:
-	./export.sh; . ./export.sh; go run ./cmd/main.go
+	telepresence --deployment test --docker-run --rm -it -p 8080:8080 -v /tmp/key:/tmp/key --env-file .env asia.gcr.io/solaire-resort-ops/real-time-event-processing/pubsub-router:latest
+
+.PHONY: build
+build:
+	docker build . -t asia.gcr.io/solaire-resort-ops/real-time-event-processing/pubsub-router:latest
+
+.PHONY: push
+push:
+	docker push asia.gcr.io/solaire-resort-ops/real-time-event-processing/pubsub-router:latest

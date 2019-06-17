@@ -162,8 +162,9 @@ func initKafkaPubSubHandler() *kafkapubsub.Publisher {
 	if kafkahost == "" {
 		logger.Log("KAFKA_PORT", "environment variable must be set.\n")
 	}
+	fmt.Println(fmt.Sprintf("%s:%d", kafkaHost, kafkaport))
 	config := &kafka.ConfigMap{
-		"bootstrap.servers":      fmt.Sprintf("%v:%d", kafkaHost, kafkaport),
+		"bootstrap.servers":      "staging-kafka.kafka:9092",//fmt.Sprintf("%s:%d", kafkaHost, kafkaport),
 		"go.batch.producer":      true,
 		"queue.buffering.max.ms": 10,
 	}

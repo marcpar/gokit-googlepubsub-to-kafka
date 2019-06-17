@@ -1,10 +1,5 @@
-############################
-# STEP 1 build executable binary
-############################
-FROM golang:1.12.5-alpine3.9 
-# as build-env
-# Install git.
-# Git is required for fetching the dependencies.
+FROM golang:1.12.5-alpine3.9
+
 RUN apk update && apk add --no-cache git \
     gcc \
     curl \
@@ -14,13 +9,12 @@ RUN apk update && apk add --no-cache git \
     musl-dev \
     librdkafka-dev
 
-RUN curl https://glide.sh/get | sh
-RUN mkdir /srv/messenger
+RUN mkdir /srv/messenger /tmp/key
+
 RUN adduser -D -g '' appuser
 
 WORKDIR /srv/messenger
 
-# <- COPY go.mod and go.sum files to the workspace
 COPY go.mod .
 
 COPY go.sum .
@@ -30,21 +24,7 @@ ENV GO111MODULE=on
 RUN go mod download
 
 COPY . .
-# Fetch dependencies.
-# Using go get.
-# RUN go build -o /go/bin/messenger ./cmd
-# RUN go get -d -v
-# Using go mod.
-# RUN go mod download
-# Build the binary.
+
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -a -o /go/bin/messenger ./cmd
 
 ENTRYPOINT ["/go/bin/messenger"]
-############################
-# STEP 2 build a small image
-############################
-# FROM scratch
-# COPY --from=build-env /etc/passwd /etc/passwd
-# COPY --from=build-env /go/bin/messenger /go/bin/messenger
-# USER appuser
-# ENTRYPOINT ["/go/bin/messenger"]

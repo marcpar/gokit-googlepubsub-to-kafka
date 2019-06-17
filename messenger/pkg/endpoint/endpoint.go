@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"context"
-	"fmt"
 
 	"cloud.google.com/go/pubsub"
 	endpoint "github.com/go-kit/kit/endpoint"
@@ -24,14 +23,10 @@ type SubscriberResponse struct {
 
 // MakeSubscriberEndpoint returns an endpoint that invokes Subscriber on the service.
 func MakeSubscriberEndpoint(s service.MessengerService) endpoint.Endpoint {
-	// return publicsher.End
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SubscriberRequest)
-		// ctx = context.WithValue(ctx, "attributes", req.Attributes)
 		msg, attr, err := s.Subscriber(ctx, req.Msg, req.Attributes)
-		fmt.Println(msg, attr, err)
-		//TODO: endpoint return
-		return SubscriberResponse{Msg: req.Msg, Attributes: req.Attributes, Err: err}, nil
+		return SubscriberResponse{Msg: msg, Attributes: attr, Err: err}, nil
 	}
 }
 
